@@ -1,4 +1,5 @@
-#Elsőfokú egyenlet
+#Elsőfokú egyenletasd
+
 x = 8
 while x**2 + x*2 + 5 != 11668:
     x += 1
