@@ -1,0 +1,377 @@
+window.addEventListener('load', checkEverytingExist('window'), false );
+
+	function get_ad(zone,referer,url,selected){
+
+		var hirdetesIdText = "";
+		if(selected !== undefined)
+		{
+			hirdetesIdText = "&hirdetes_id="+selected;
+		}
+
+		console.log("hirdetesIdText:"+hirdetesIdText);
+
+		var zonexhr  = new XMLHttpRequest();
+
+    	zonexhr.open('GET', 'https://admanager.netadclick.com/getzoneinfo.php?id='+zone.id+'&url='+url+'&referer='+referer);
+    	zonexhr.onload = function() {
+			if (zonexhr.status === 200) {
+			    
+			    //alert()
+			    var oZone = JSON.parse(zonexhr.responseText);
+			    //console.log(oZone);
+			    if(oZone.xhrstatus =='ok')
+			    {
+			    	//alert("mukodo zone id:"+zone.id);
+			    	document.getElementById(zone.id).style.display='block';
+			    	document.getElementById(zone.id).style.width=oZone.szelesseg;
+			    	document.getElementById(zone.id).style.height=oZone.height;
+			    	if(oZone.szalag == 't')
+			    	{
+
+			    		var fullszelesseg=parseFloat(oZone.szelesseg)+parseFloat(30);
+			    		var leftsize=(window.innerWidth-parseFloat(oZone.szelesseg))/2;
+			    		document.getElementById(zone.id).style.position='fixed';
+			    		document.getElementById(zone.id).style.bottom='0px';
+			    		document.getElementById(zone.id).style.left=leftsize+'px';
+			    		document.getElementById(zone.id).style.zIndex=5000;
+			    		document.getElementById(zone.id).style.width=''+fullszelesseg+'px';
+			    		//if(oZone.idn != 7830)
+			    		//{
+			    			document.getElementById(zone.id).innerHTML = '<iframe id="frame_'+zone.id+'" width="'+oZone.szelesseg+'" name="netadclickframe" height="'+oZone.magassag+'" url="'+top.location.href+'" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//gateway.netadclick.com/hirdetes/'+oZone.idn+'?value=1'+hirdetesIdText+'&referer_url='+top.location.href+'"></iframe><div style="position:absolute;left:'+oZone.szelesseg+'px;top:0px;padding:2px;background:white;"><a href="javascript:void(0);" onclick="javascript:document.getElementById('+"'"+zone.id+"'"+').style.display='+"'"+'none'+"'"+';" style="width:30px;">X</a></div>';
+			    		//}else{
+			    		//	console.log('Zona kiszolgalas felfuggesztve');
+			    		//}
+			    		
+
+			    		var avxhr  = new XMLHttpRequest();
+	  					avxhr.open('GET', 'https://admanager.netadclick.com/activview.php?id='+zone.id+'&view=1');
+	  					avxhr.send();
+	  					var avxhr  = new XMLHttpRequest();
+	  					avxhr.open('GET', 'https://admanager.netadclick.com/activview.php?id='+zone.id+'&view=2');
+	  					avxhr.send();
+			    	}else{
+			    		//if(oZone.idn != 7830)
+			    		//{
+			    			document.getElementById(zone.id).innerHTML = '<div> <iframe id="frame_'+zone.id+'" name="netadclickframe" width="'+oZone.szelesseg+'" height="'+oZone.magassag+'" url="'+top.location.href+'" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//gateway.netadclick.com/hirdetes/'+oZone.idn+'?value=1'+hirdetesIdText+'&referer_url='+top.location.href+'"></iframe></div>';
+			    		//}else{
+			    		//	console.log('Zona kiszolgalas felfuggesztve');
+			    		//}
+
+			    		var avxhr  = new XMLHttpRequest();
+	  					avxhr.open('GET', 'https://admanager.netadclick.com/activview.php?id='+zone.id+'&view=1');
+	  					avxhr.send();
+			    	}
+			    	
+
+			    }
+			}
+			else {
+			    console.log('Request failed.  Returned status of ' + zonexhr.status);
+			}
+		};
+				
+		zonexhr.send();
+
+	}
+
+	function checkEverytingExist(event,load)
+	{
+		console.log('Admanager version:10.1.9');
+		if(load === undefined)
+		{
+			load = 0;
+		}else{
+			load = load+1;
+		}
+
+		if(document.body !== undefined && load>0)
+		{
+			console.log('Body exist');
+			zoneShow(event);
+		}else{
+			console.log('Ebbe fut');
+			if(load>10)
+			{
+				return false;
+			}else{
+				setTimeout(function(){checkEverytingExist(event,load)},400);
+			}
+		}
+		
+	}
+
+
+	function zoneShow(event) {
+		console.log(event);
+			loaded = true;
+			function closeSzalag(elm){
+				document.getElementById(elm).style.display='none';
+			}
+			var zones = document.getElementsByClassName("netadsbnnrzns");
+			var referer = document.referrer;
+			var url 	= document.URL;
+			var device_id = null;
+
+
+
+			var ifrm = document.createElement("iframe");
+		    ifrm.setAttribute("src", "https://api.indidata.com/device_id.html");
+		    ifrm.style.width = "0px";
+		    ifrm.style.height = "0px";
+		    ifrm.style.display = "none";
+		    document.body.appendChild(ifrm);
+		    var loaded = false;
+			window.addEventListener("message", function(event) {
+		        if(event.origin == "https://api.indidata.com" && loaded === false)
+		        {
+		        	loaded = true;
+		            //console.log(event.origin+"Hello from " + event.data);
+		          device_id = event.data;
+
+		          console.log("Indi device:"+device_id);
+
+		          	
+
+					console.log(zones);
+					Array.prototype.forEach.call(zones, function(zone) {
+						document.getElementById(zone.id).style.display='block';
+					    // Do stuff here
+					    //console.log(zone.dataset.bnrid); //write console log zone id
+					    if( checkVisible(document.getElementById(zone.id)) )
+		  				{
+						   	this['marlattuk'+zone.id] = 2;
+							getData(device_id,zone,referer,url);
+							console.log('A Zona lathato indulaskor:'+zone.id);
+
+			            }else{
+			            	//console.log('Ide eljutunk?');
+			            	var chkzone  = new XMLHttpRequest();	
+			            	chkzone.open('GET', 'https://admanager.netadclick.com/getzoneinfo.php?id='+zone.id+'&url='+url+'&referer='+referer);
+			            	//console.log("checkzone:"+chkzone.status);
+    						chkzone.onload = function() {
+    							 console.log(chkzone);
+    								if (chkzone.status === 200) {
+			    
+									    //alert()
+									    //console.log(chkzone);
+									    var oCheckZone = JSON.parse(chkzone.responseText);
+									    //console.log('xhrstatus:'+oCheckZone.xhrstatus);
+									    if(oCheckZone.xhrstatus =='ok')
+									    {
+									    	if(oCheckZone.szalag == 't')
+			    							{
+			    								this['marlattuk'+zone.id] = 2;
+												getData(device_id,zone,referer,url);
+												console.log('A Zona szalag:'+zone.id);
+			    							}else{
+			    								console.log('A Zona nem lathato indulaskor:'+zone.id);
+			    							}
+										}
+									}else{
+										console.log('A Zona nem lathato indulaskor:'+zone.id);
+									}
+    						}
+    						chkzone.send();
+			            	
+			            }
+		                
+					});
+				}else{
+					//console.log('Event!?');
+					//get_ad(zone,referer);
+				}
+			});
+
+			window.onscroll = function() {
+		  		Array.prototype.forEach.call(zones, function(zone) {
+		  			//console.log('netadclick scroll');
+		  			if(this['lathato'+zone.id] === undefined)
+		  			{
+		  				this['lathato'+zone.id] = 1; //nem lathato
+		  			}
+
+		  			if(this['marlattuk'+zone.id] === undefined)
+		  			{
+		  				this['marlattuk'+zone.id] = 1; //Nem lattuk
+		  			}
+
+		  			//console.log(zone.id+'document'+document.getElementById(zone.id));
+		  			if( checkVisible(document.getElementById(zone.id)) )
+		  			{
+			  				//console.log('Zona lathato');
+			  				if(this['lathato'+zone.id] ==1)
+			  				{
+			  					//alert('lathato'+zone.id);
+			  					this['lathato'+zone.id] =2;
+			  					var zonexhr  = new XMLHttpRequest();
+			  					zonexhr.open('GET', 'https://admanager.netadclick.com/activview.php?id='+zone.id+'&view=2');
+			  					zonexhr.send();
+			  					//this['lathato'+zone.id] =2;
+			  				}
+			  				if(this['marlattuk'+zone.id] == 1) //Meg nem lattuk
+			  				{
+			  					console.log('Zona megjelenites');
+			  					
+			  					if(device_id !== null && zone.id != 'ntdBnrId_7830')
+			  					{
+			  						console.log('Zona van device id megjelenites');
+			  						getData(device_id,zone,referer,url);
+			  					}else{
+			  						if(zone.id == 'ntdBnrId_7830')
+			  						{
+			  							console.log('Jobb mint a tv patch');
+			  						}else{
+			  							console.log('Zona nincs device id megjelenites');
+			  						}
+			  						get_ad(zone,referer,url);
+			  					
+			  					}
+			  					this['marlattuk'+zone.id] = 2;
+			  					
+			  				}
+		  			}else{
+		  				if(this['lathato'+zone.id] ==2)
+		  				{
+		  					//alert('Nem lathato'+zone.id);
+		  					this['lathato'+zone.id]=1;
+		  				}	
+		  			}
+		  		});
+		
+		};
+	}
+
+	function getData(device_id,zone,referer,url){
+		var str = zone.id;
+		var zone_id = str.split("_");
+
+		var getgeo = new XMLHttpRequest();
+			                getgeo.open('GET', 'https://api.indidata.com/geoip');
+			                getgeo.onload = function(){
+			                	//console.log('Geo Load');
+			                	if (getgeo.status === 200) {
+								    //console.log('Geo ' + getgeo.responseText);
+								    var obj = JSON.parse(getgeo.responseText);
+								    if(obj !== null && typeof obj === 'object' && obj.msg == 'success')
+								    { 
+								    	//console.log('Geo obj success');
+								    	/*var json_text = {"token_id":token_id,"device_id":device_id,"language":userLang,"geo":obj.regio+'/'+obj.postal_code};
+					                    var indidata_device = new XMLHttpRequest();
+					                    indidata_device.open("POST", "https://api.indidata.com/send_device_id",true);
+					                    indidata_device.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+					                    indidata_device.send( "json=" + encodeURIComponent(JSON.stringify(json_text)) );
+										*/
+										var indiXHR = new XMLHttpRequest();
+										var indiurl = "https://getad.indidata.com/?comm_flag=0&system_id=netadclick&device_id="+device_id+"&zona_id="+zone_id[1]+"&netadclick_flag=0&irszam="+obj.postal_code+"&hely="+obj.regio;
+										//get_ad(zone,referer,url);
+										
+										indiXHR.open("GET", indiurl, true);
+										//indiXHR.setRequestHeader("Content-Type", "application/json");
+										indiXHR.onload = function () {
+										    if (indiXHR.status === 200) {
+										        var json = JSON.parse(indiXHR.responseText);
+										        console.log("Visszakapott hirdetesek:"+indiXHR.responseText);
+										        var i = 1;
+										        var maxValue = 0;
+										        var highest = [];
+												for (var key in json){
+												  var value = json[key];
+												  //console.log(i+"|" + key + ": " + value);
+
+												  if(maxValue == value)
+												  {
+												  	 //Melle rakjuk
+												  	 //console.log("melle rakjuk"+key);
+												  	 highest.push(key);
+												  }else if(maxValue<value)
+												  {
+												  	//toroljuk es ujkent rakjuk bele
+												  	maxValue = value;
+												  	//console.log("Uritjuk"+key);
+												  	var highest = [];
+												  	highest.push(key);
+												  }else{
+												  	//MaxValue nagyobb mint az aktualis value azaz van benne olyan ami nagyobb sulyu nem csinalunk vele semmit
+
+												  }
+												 
+												  
+												  i++;
+												}
+												if(highest.length>0)
+												{
+													var random 		= Math.floor(Math.random() * highest.length);
+													var selected	= highest[random];
+													console.log("Kiemelkedo hirdetesek:"+highest);
+													console.log("Kivalasztott:"+selected);
+													if(selected != '')
+													{
+														get_ad(zone,referer,url,selected);
+													}else{
+														console.log('Not Selected?');
+														get_ad(zone,referer,url);
+													}
+												}else{
+													console.log('Highest problem');
+													get_ad(zone,referer,url);
+												}
+												
+												
+												
+										    }else{
+										    	console.log('indiXHR status');
+										    	get_ad(zone,referer,url);
+										    }
+										};
+
+										indiXHR.onerror = function () {
+											console.log('indiXHR onError');
+										    get_ad(zone,referer,url);
+										};
+										//var data = JSON.stringify({"comm_flag": "0", "system_id":"netadclick","device_id":device_id,"zona_id":zone_id[1],"url":url,"netadclick_flag":"0"});
+										indiXHR.send();
+
+								    }else{
+								    	get_ad(zone,referer,url);
+								    	console.log("GEO data invalid"+getgeo.responseText);
+								    }
+
+								   
+								}
+								else {
+								    console.log('GEO Request failed.  Returned status of ' + ntdClckXhr.status);
+								    get_ad(zone,referer,url);
+								}
+			                
+			                }
+
+			                getgeo.send();
+	}
+
+	function aGet(url, cb) {
+	    var x = new XMLHttpRequest();
+	    x.onload = function(e) {
+	        cb(x.responseText)
+	    };
+	    x.onerror= function(e) {
+	        alert("Error fetching " + url);
+	    };
+	    x.open("GET", url, true);
+	    x.send();
+	}
+
+	function checkVisible(elm) {
+		if(elm != null)
+		{
+			//console.log(elm);
+			var rect = elm.getBoundingClientRect();
+			//console.log("Netad"+rect);
+
+			var viewHeight = Math.min(document.documentElement.clientHeight, window.innerHeight);
+			//console.log('viewHeight:'+viewHeight+'rect.bottom:'+rect.bottom+'recttop:'+rect.top+'document client:'+document.documentElement.clientHeight+'document inner:'+window.innerHeight);
+			return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+		}else{
+			return false;
+		}
+		
+	}
